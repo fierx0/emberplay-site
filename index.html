@@ -1,9 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Emberplay</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+html,body{margin:0;padding:0}
   /* ============================================================
      DESIGN PLAN
      Layout: fixed left sidebar nav (desktop) that collapses into a
@@ -417,6 +422,8 @@
     .price-amount{font-size:34px}
   }
 </style>
+</head>
+<body>
 
 <div class="shell">
   <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
@@ -601,12 +608,12 @@
             </div>
             <h3>Android</h3>
             <p>One APK for phones, tablets, Android TV boxes and Fire TV Stick.</p>
-            <a href="https://github.com/fierx0/LumaPlay-releases/releases/download/v1.0.1/LumaPlay-Android.apk" class="btn btn-accent btn-block download-btn">
+            <a href="https://github.com/fierx0/emberplay-releases/releases/download/v1.1.0/Emberplay-Android.apk" class="btn btn-accent btn-block download-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4.5-4.5M12 16l4.5-4.5"/><path d="M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
               Download APK
             </a>
             <ul class="download-meta">
-              <li>Version 1.0.1 · 236 MB</li>
+              <li>Version 1.1.0 · 236 MB</li>
               <li>Requires Android 7.0 or newer</li>
             </ul>
             <p class="download-note">Allow "install unknown apps" for your browser, then open the downloaded file.</p>
@@ -618,15 +625,15 @@
             </div>
             <h3>Windows</h3>
             <p>A native desktop app for Windows 10 and 11 with the same library and playback engine.</p>
-            <a href="https://github.com/fierx0/LumaPlay-releases/releases/download/v1.0.1/LumaPlay-Windows.zip" class="btn btn-accent btn-block download-btn">
+            <a href="https://github.com/fierx0/emberplay-releases/releases/download/v1.1.0/Emberplay-Windows.zip" class="btn btn-accent btn-block download-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0-4.5-4.5M12 16l4.5-4.5"/><path d="M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
               Download for Windows
             </a>
             <ul class="download-meta">
-              <li>Version 1.0.1 · 33 MB (.zip)</li>
+              <li>Version 1.1.0 · 33 MB (.zip)</li>
               <li>Windows 10/11 · 64-bit</li>
             </ul>
-            <p class="download-note">Extract the zip anywhere and run lumaplay.exe. Windows SmartScreen may warn about an unrecognized app — choose "More info" → "Run anyway."</p>
+            <p class="download-note">Extract the zip anywhere and run emberplay.exe. Windows SmartScreen may warn about an unrecognized app — choose "More info" → "Run anyway."</p>
           </div>
         </div>
       </div>
@@ -965,3 +972,5 @@
   });
 })();
 </script>
+</body>
+</html>

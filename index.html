@@ -626,6 +626,10 @@ html,body{margin:0;padding:0}
 
           <form id="addPlaylistForm">
             <div class="addplaylist-field">
+              <label for="apName">Playlist Name</label>
+              <input class="field-box" id="apName" type="text" placeholder="My Playlist" autocomplete="off">
+            </div>
+            <div class="addplaylist-field">
               <label for="apMac">Your Device's MAC Address</label>
               <input class="field-box" id="apMac" type="text" placeholder="AA:BB:CC:DD:EE:FF" autocomplete="off" required>
               <p class="addplaylist-hint">Find it in Emberplay → Settings → "Your MAC" (tap the copy icon). The device needs to have been opened at least once, and be activated or still in its trial.</p>
@@ -1066,6 +1070,7 @@ html,body{margin:0;padding:0}
 
   apForm.addEventListener('submit', function(e){
     e.preventDefault();
+    var name = document.getElementById('apName').value.trim() || 'My Playlist';
     var mac = apNormalizeMac(document.getElementById('apMac').value);
     var server = document.getElementById('apServer').value.trim();
     var user = document.getElementById('apUser').value.trim();
@@ -1096,7 +1101,7 @@ html,body{margin:0;padding:0}
               mapValue: {
                 fields: {
                   id: { stringValue: 'web-' + Date.now() },
-                  name: { stringValue: 'My Playlist' },
+                  name: { stringValue: name },
                   serverUrl: { stringValue: server },
                   username: { stringValue: user },
                   password: { stringValue: pass }

@@ -298,15 +298,22 @@ html,body{margin:0;padding:0}
     color:rgba(255,235,210,.5);margin-bottom:16px;text-align:center;
   }
   .addplaylist-tabs{display:flex;gap:6px;background:rgba(255,255,255,.06);padding:4px;border-radius:999px;margin-bottom:18px}
-  .addplaylist-tab{flex:1;text-align:center;font-family:'Sora',sans-serif;font-size:11.5px;font-weight:700;color:rgba(255,235,210,.55);padding:8px 4px;border-radius:999px}
+  .addplaylist-tab{flex:1;text-align:center;font-family:'Sora',sans-serif;font-size:11.5px;font-weight:700;color:rgba(255,235,210,.55);padding:8px 4px;border-radius:999px;border:none;background:none;cursor:pointer;font:inherit}
   .addplaylist-tab.active{background:var(--accent);color:var(--ink-on-accent)}
   .addplaylist-field{margin-bottom:12px}
   .addplaylist-field label{display:block;font-family:'Sora',sans-serif;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,235,210,.45);margin-bottom:6px}
   .addplaylist-field .field-box{
-    background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:10px;
-    padding:11px 14px;font-size:13px;color:#FDF2E2;font-family:'Manrope',sans-serif;
+    width:100%;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:10px;
+    padding:11px 14px;font-size:13px;color:#FDF2E2;font-family:'Manrope',sans-serif;outline:none;
+    transition:border-color .15s ease;
   }
-  .addplaylist-btn{margin-top:14px;width:100%;justify-content:center}
+  .addplaylist-field .field-box::placeholder{color:rgba(255,235,210,.35)}
+  .addplaylist-field .field-box:focus{border-color:var(--accent)}
+  .addplaylist-hint{font-size:10.5px;color:rgba(255,235,210,.4);margin-top:5px;line-height:1.5}
+  .addplaylist-btn{margin-top:14px;width:100%;justify-content:center;border:none}
+  .addplaylist-btn:disabled{opacity:.6;cursor:default;transform:none!important}
+  .addplaylist-msg{margin-top:12px;font-size:12.5px;line-height:1.55;min-height:14px;color:rgba(255,235,210,.6)}
+  .addplaylist-m3u-note{font-size:13px;color:rgba(255,235,210,.6);line-height:1.6;padding:6px 2px}
 
   /* ---------- features ---------- */
   .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
@@ -612,26 +619,39 @@ html,body{margin:0;padding:0}
 
         <div class="addplaylist-panel reveal">
           <div class="addplaylist-label">Step 2 — Add Playlist</div>
-          <div class="addplaylist-tabs">
-            <span class="addplaylist-tab active">Xtream Codes</span>
-            <span class="addplaylist-tab">M3U</span>
+          <div class="addplaylist-tabs" role="tablist">
+            <button type="button" class="addplaylist-tab active" data-tab="xtream">Xtream Codes</button>
+            <button type="button" class="addplaylist-tab" data-tab="m3u">M3U</button>
           </div>
-          <div class="addplaylist-field">
-            <label>Server URL</label>
-            <div class="field-box">http://your-provider.com:8080</div>
+
+          <form id="addPlaylistForm">
+            <div class="addplaylist-field">
+              <label for="apMac">Your Device's MAC Address</label>
+              <input class="field-box" id="apMac" type="text" placeholder="AA:BB:CC:DD:EE:FF" autocomplete="off" required>
+              <p class="addplaylist-hint">Find it in Emberplay → Settings → "Your MAC" (tap the copy icon). The device needs to have been opened at least once, and be activated or still in its trial.</p>
+            </div>
+            <div class="addplaylist-field">
+              <label for="apServer">Server URL</label>
+              <input class="field-box" id="apServer" type="text" placeholder="http://your-provider.com:8080" autocomplete="off" required>
+            </div>
+            <div class="addplaylist-field">
+              <label for="apUser">Username</label>
+              <input class="field-box" id="apUser" type="text" autocomplete="off" required>
+            </div>
+            <div class="addplaylist-field">
+              <label for="apPass">Password</label>
+              <input class="field-box" id="apPass" type="password" autocomplete="off" required>
+            </div>
+            <button type="submit" class="btn btn-accent addplaylist-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add Playlist
+            </button>
+            <p class="addplaylist-msg" id="addPlaylistMsg" aria-live="polite"></p>
+          </form>
+
+          <div id="addPlaylistM3uNote" class="addplaylist-m3u-note" hidden>
+            M3U playlists are added directly inside the Emberplay app itself (Setup screen) — this form is for Xtream Codes only, since that's what a device's remote playlist assignment supports.
           </div>
-          <div class="addplaylist-field">
-            <label>Username</label>
-            <div class="field-box">••••••••</div>
-          </div>
-          <div class="addplaylist-field">
-            <label>Password</label>
-            <div class="field-box">••••••••</div>
-          </div>
-          <span class="btn btn-accent addplaylist-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-            Add Playlist
-          </span>
         </div>
       </div>
     </section>
@@ -1013,6 +1033,102 @@ html,body{margin:0;padding:0}
     if(!email) return;
     msg.textContent = "You're on the list — thanks for subscribing.";
     form.reset();
+  });
+
+  /* ---- add playlist (self-service, by MAC, Xtream only) ---- */
+  var FIRESTORE_PROJECT = 'lumaplay-admin';
+  var FIRESTORE_API_KEY = 'AIzaSyAH69ZGLdsO82-VJ04xwTFZy2hK9k3XhQc';
+
+  var apTabs = document.querySelectorAll('.addplaylist-tab');
+  var apForm = document.getElementById('addPlaylistForm');
+  var apM3uNote = document.getElementById('addPlaylistM3uNote');
+  apTabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      apTabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var isXtream = tab.getAttribute('data-tab') === 'xtream';
+      apForm.hidden = !isXtream;
+      apM3uNote.hidden = isXtream;
+    });
+  });
+
+  function apNormalizeMac(raw){
+    var hex = raw.replace(/[^0-9a-fA-F]/g, '').toUpperCase();
+    if (hex.length !== 12) return null;
+    return hex.match(/.{2}/g).join(':');
+  }
+
+  var apMsg = document.getElementById('addPlaylistMsg');
+  function apSetMsg(text, isError){
+    apMsg.textContent = text;
+    apMsg.style.color = isError ? '#FF8A8A' : 'var(--accent-soft)';
+  }
+
+  apForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var mac = apNormalizeMac(document.getElementById('apMac').value);
+    var server = document.getElementById('apServer').value.trim();
+    var user = document.getElementById('apUser').value.trim();
+    var pass = document.getElementById('apPass').value;
+
+    if(!mac){
+      apSetMsg("That MAC address doesn't look right — it should be 12 hex characters, e.g. AA:BB:CC:DD:EE:FF.", true);
+      return;
+    }
+    if(!server || !user || !pass){
+      apSetMsg('Fill in the server URL, username and password.', true);
+      return;
+    }
+
+    var btn = apForm.querySelector('.addplaylist-btn');
+    btn.disabled = true;
+    apSetMsg('Connecting…', false);
+
+    var url = 'https://firestore.googleapis.com/v1/projects/' + FIRESTORE_PROJECT +
+      '/databases/(default)/documents/devices/' + encodeURIComponent(mac) +
+      '?updateMask.fieldPaths=playlists&updateMask.fieldPaths=updatedAt&key=' + FIRESTORE_API_KEY;
+
+    var body = {
+      fields: {
+        playlists: {
+          arrayValue: {
+            values: [{
+              mapValue: {
+                fields: {
+                  id: { stringValue: 'web-' + Date.now() },
+                  name: { stringValue: 'My Playlist' },
+                  serverUrl: { stringValue: server },
+                  username: { stringValue: user },
+                  password: { stringValue: pass }
+                }
+              }
+            }]
+          }
+        },
+        updatedAt: { timestampValue: new Date().toISOString() }
+      }
+    };
+
+    fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function(res){
+      if(res.ok){
+        apSetMsg("Playlist added — open Emberplay on that device (or wait a few minutes for its next check-in) and it'll be there.", false);
+        apForm.reset();
+        return;
+      }
+      if(res.status === 403){
+        apSetMsg("That device isn't activated (or its trial has ended) yet, or no device with that MAC has ever checked in — open Emberplay on it at least once first, then try again.", true);
+        return;
+      }
+      apSetMsg('Something went wrong (status ' + res.status + '). Double-check the MAC and try again.', true);
+    }).catch(function(){
+      apSetMsg("Couldn't reach the activation server. Check your connection and try again.", true);
+    }).finally(function(){
+      btn.disabled = false;
+    });
   });
 })();
 </script>

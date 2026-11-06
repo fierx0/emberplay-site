@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emberplay Reseller API</title>
+<meta name="description" content="Add playlists to your customers' Emberplay devices by MAC from your own billing panel, bot or script.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFDF1; --bg-soft:#FFF6E1; --surface:#FFFFFF;
+    --ink:#562F00; --muted:#8A6B49; --accent:#FF9644; --accent-soft:#FFCE99;
+    --ink-on-accent:#3A1F00; --border:rgba(86,47,0,.14);
+    --code-bg:#2A1C0E; --code-ink:#FBEEDA; --code-muted:#C8A77D;
+    --ok:#2F7D32; --warn:#B3261E;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1B1208; --bg-soft:#241708; --surface:#2A1C0E;
+      --ink:#FBEEDA; --muted:#C8A77D; --accent:#FF9F52; --accent-soft:#44301A;
+      --ink-on-accent:#2A1600; --border:rgba(251,238,218,.14);
+      --code-bg:#140D05; --code-ink:#FBEEDA; --code-muted:#C8A77D;
+      --ok:#7BC47F; --warn:#F2847C;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1B1208; --bg-soft:#241708; --surface:#2A1C0E;
+    --ink:#FBEEDA; --muted:#C8A77D; --accent:#FF9F52; --accent-soft:#44301A;
+    --ink-on-accent:#2A1600; --border:rgba(251,238,218,.14);
+    --code-bg:#140D05; --code-ink:#FBEEDA; --code-muted:#C8A77D;
+    --ok:#7BC47F; --warn:#F2847C;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Manrope',system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Sora',system-ui,sans-serif;letter-spacing:-.01em;margin:0;text-wrap:balance}
+  a{color:var(--accent)}
+  code,pre{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace}
+  :not(pre)>code{background:var(--bg-soft);border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.88em;overflow-wrap:anywhere}
+
+  .top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .top-inner{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:'Sora',sans-serif;font-weight:700;font-size:18px}
+  .brand-mark{width:32px;height:32px;border-radius:10px;background:var(--accent);display:grid;place-items:center}
+  .brand-mark svg{width:16px;height:16px}
+  .brand-word span{color:var(--accent)}
+  .back{font-size:14px;font-weight:600;text-decoration:none;color:var(--muted)}
+  .back:hover{color:var(--accent)}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+  .toc{position:sticky;top:76px;align-self:start;padding:40px 0;font-size:14px}
+  .toc a{display:block;padding:5px 0;color:var(--muted);text-decoration:none}
+  .toc a:hover{color:var(--accent)}
+  main{padding:40px 0 80px;min-width:0}
+  .eyebrow{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .lead{font-size:18px;color:var(--muted);max-width:62ch;margin:14px 0 0}
+  h1{font-size:clamp(30px,5vw,44px);margin-top:8px}
+  section{padding-top:44px;scroll-margin-top:72px}
+  h2{font-size:24px;margin-bottom:12px}
+  h3{font-size:17px;margin:24px 0 8px}
+  p{margin:0 0 12px;max-width:68ch}
+  ul{padding-left:20px;margin:0 0 12px}
+  li{margin:4px 0}
+
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:14px;padding:16px 18px;overflow-x:auto;font-size:13px;line-height:1.6;margin:0 0 16px}
+  pre .c{color:var(--code-muted)}
+  .callout{border:1px solid var(--border);border-left:4px solid var(--accent);background:var(--bg-soft);border-radius:12px;padding:14px 16px;margin:0 0 16px}
+  .callout p:last-child{margin:0}
+
+  .endpoint{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
+  .verb{font-family:'Sora',sans-serif;font-weight:700;font-size:12px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;background:var(--accent);color:var(--ink-on-accent)}
+  .verb.get{background:var(--accent-soft);color:var(--ink)}
+  .verb.del{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+
+  .table-wrap{overflow-x:auto;margin:0 0 16px;border:1px solid var(--border);border-radius:12px}
+  table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-family:'Sora',sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg-soft)}
+  tr:last-child td{border-bottom:0}
+  td code{white-space:nowrap}
+
+  footer{border-top:1px solid var(--border);padding:24px 16px;text-align:center;color:var(--muted);font-size:13px}
+
+  @media (max-width:820px){
+    .wrap{grid-template-columns:minmax(0,1fr);gap:0}
+    .toc{display:none}
+    main{padding-top:28px}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a href="/" class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#3A1F00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="brand-word">Ember<span>play</span></span>
+    </a>
+    <a href="/" class="back">← Back to site</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="On this page">
+    <a href="#start">Getting started</a>
+    <a href="#auth">Authentication</a>
+    <a href="#add">Add playlists</a>
+    <a href="#replace">Replace playlists</a>
+    <a href="#read">Read a device</a>
+    <a href="#clear">Clear playlists</a>
+    <a href="#rules">Ownership &amp; locks</a>
+    <a href="#errors">Errors</a>
+    <a href="#limits">Limits</a>
+    <a href="#hotplayer">Moving from Hot Player</a>
+  </nav>
+
+  <main>
+    <span class="eyebrow">For dealers</span>
+    <h1>Reseller API</h1>
+    <p class="lead">Add playlists to a customer's Emberplay device by its MAC address, straight from your billing panel, Telegram bot or script. No need to open the dealer panel.</p>
+
+    <section id="start">
+      <h2>Getting started</h2>
+      <ol>
+        <li>Ask your master dealer to switch on <strong>API access</strong> for your account.</li>
+        <li>In the dealer panel, open <strong>API keys</strong> (the key icon) and create a key. It is shown <strong>once</strong>, so copy it straight to your server.</li>
+        <li>Send requests to <code>https://api.emberplay.stream</code>.</li>
+      </ol>
+      <div class="callout">
+        <p><strong>Server-to-server only.</strong> Never put your key in a web page, a browser <code>fetch()</code> or a mobile app. Anyone who sees it can add playlists in your name. If a key leaks, revoke it in the panel. It stops working at once.</p>
+      </div>
+      <p>The device must have opened Emberplay at least once, so that it has checked in. New playlists show up in the app's playlist switcher on its next check-in.</p>
+    </section>
+
+    <section id="auth">
+      <h2>Authentication</h2>
+      <p>Send the key in the <code>Authorization</code> header:</p>
+      <pre>Authorization: ApiKey emb_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</pre>
+      <p><code>Bearer emb_live_…</code> also works. MAC addresses can be written <code>AA:BB:CC:DD:EE:FF</code>, <code>aa-bb-cc-dd-ee-ff</code> or <code>AABBCCDDEEFF</code>.</p>
+    </section>
+
+    <section id="add">
+      <h2>Add playlists</h2>
+      <div class="endpoint"><span class="verb">POST</span>/api/v1/devices/{mac}/playlists</div>
+      <p>Adds 1 to 10 playlists. Playlists already on the device stay where they are, so whatever the customer is watching keeps playing. A playlist that is already there is skipped: for Xtream, the same server and username; for M3U, the same URL.</p>
+      <pre><span class="c"># Xtream Codes</span>
+curl -X POST https://api.emberplay.stream/api/v1/devices/AA:BB:CC:DD:EE:FF/playlists \
+  -H "Authorization: ApiKey $EMBERPLAY_KEY" \
+  -H "Content-Type: application/json" \
+  -d '[
+    { "name": "Main",   "type": "xtream", "server": "http://host:8080", "username": "u", "password": "p" },
+    { "name": "Backup", "type": "m3u",    "url": "http://host/get.php?username=u&amp;password=p&amp;type=m3u_plus",
+      "epgUrl": "http://host/xmltv.php" }
+  ]'</pre>
+      <h3>Fields</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+        <tbody>
+          <tr><td><code>"xtream"</code></td><td><code>name</code>, <code>server</code> (http/https base URL), <code>username</code>, <code>password</code></td></tr>
+          <tr><td><code>"m3u"</code></td><td><code>name</code>, <code>url</code>, optional <code>epgUrl</code></td></tr>
+          <tr><td>none</td><td><code>name</code>, <code>url</code> as <code>"host|username|password"</code>, read as Xtream</td></tr>
+        </tbody>
+      </table></div>
+      <p>Names are 1 to 60 characters; URLs are http or https, up to 2048 characters. Unknown fields are rejected.</p>
+      <h3>Response <code>200</code></h3>
+      <pre>{
+  "mac": "AA:BB:CC:DD:EE:FF",
+  "mode": "append",
+  "added":   [ { "id": "1762412345678901234", "name": "Main", "type": "xtream" } ],
+  "skipped": [ { "name": "Backup", "reason": "duplicate" } ],
+  "claimed": true
+}</pre>
+      <p><code>claimed</code> is <code>true</code> when this request made you the device's owner (see <a href="#rules">Ownership &amp; locks</a>).</p>
+    </section>
+
+    <section id="replace">
+      <h2>Replace playlists</h2>
+      <div class="endpoint"><span class="verb">PUT</span>/api/v1/devices/{mac}/playlists</div>
+      <p>Same body as <code>POST</code>, but removes every playlist already assigned to the device first. The first one in your list becomes active on the next check-in. Only for devices you own.</p>
+    </section>
+
+    <section id="read">
+      <h2>Read a device</h2>
+      <div class="endpoint"><span class="verb get">GET</span>/api/v1/devices/{mac}/playlists</div>
+      <p>Status and assigned playlists of a device you own. Passwords and M3U URLs are always hidden.</p>
+      <pre>{
+  "mac": "AA:BB:CC:DD:EE:FF",
+  "ownedByYou": true,
+  "activated": true,
+  "activationExpiresAt": "2027-11-06T10:00:00.000Z",
+  "lastSeenAt": "2026-11-06T09:58:12.000Z",
+  "appVersion": "1.3.0",
+  "playlistLocked": false,
+  "playlists": [
+    { "id": "1762412345678901234", "name": "Main", "type": "xtream",
+      "server": "http://host:8080", "username": "u", "password": "****" }
+  ]
+}</pre>
+    </section>
+
+    <section id="clear">
+      <h2>Clear playlists</h2>
+      <div class="endpoint"><span class="verb del">DELETE</span>/api/v1/devices/{mac}/playlists</div>
+      <p>Removes every assigned playlist from a device you own.</p>
+    </section>
+
+    <section id="rules">
+      <h2>Ownership &amp; locks</h2>
+      <ul>
+        <li><strong>Your device:</strong> you can add, replace, read and clear.</li>
+        <li><strong>A new device</strong> (no owner, no playlists yet): your first add or replace makes you its owner.</li>
+        <li><strong>Another dealer's device:</strong> you can only <em>add</em>, and only if that dealer has not locked its playlists. You can't replace, read or clear it. To you it looks like it doesn't exist.</li>
+      </ul>
+      <p>Lock a customer's device in the dealer panel to stop other dealers adding playlists to it.</p>
+    </section>
+
+    <section id="errors">
+      <h2>Errors</h2>
+      <p>Errors come back as <code>{"error": {"code", "message", "field"?}}</code>.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Status</th><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>400</code></td><td><code>invalid</code></td><td>Bad input; <code>field</code> says which, e.g. <code>[0].url</code> or <code>mac</code></td></tr>
+          <tr><td><code>400</code></td><td><code>too_many_playlists</code></td><td>The device would have more than 30 playlists</td></tr>
+          <tr><td><code>401</code></td><td><code>unauthorized</code></td><td>Missing, wrong or revoked key</td></tr>
+          <tr><td><code>403</code></td><td><code>api_disabled</code></td><td>API access is switched off for your account</td></tr>
+          <tr><td><code>403</code></td><td><code>device_not_registered</code></td><td>The device has never opened Emberplay</td></tr>
+          <tr><td><code>403</code></td><td><code>locked</code></td><td>The owning dealer locked this device's playlists</td></tr>
+          <tr><td><code>403</code></td><td><code>not_owner</code></td><td>Only the owner can replace a device's playlists</td></tr>
+          <tr><td><code>404</code></td><td><code>not_found</code></td><td>No such device among yours (read/clear)</td></tr>
+          <tr><td><code>429</code></td><td><code>rate_limited</code></td><td>Too many requests; wait <code>Retry-After</code> seconds</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="limits">
+      <h2>Limits</h2>
+      <ul>
+        <li>60 requests per minute and 2,000 per day, per key.</li>
+        <li>1 to 10 playlists per request, 30 per device.</li>
+        <li>Up to 10 active keys per dealer account.</li>
+      </ul>
+    </section>
+
+    <section id="hotplayer">
+      <h2>Moving from Hot Player</h2>
+      <p>Your existing integration works with two changes: the base URL and the key. Hot Player's path is accepted as-is:</p>
+      <pre>POST https://api.emberplay.stream/api/v1/reseller/add-playlists/{mac}
+[ { "name": "Main", "url": "http://host:8080|username|password" } ]</pre>
+    </section>
+  </main>
+</div>
+
+<footer>© 2026 Emberplay. Emberplay is a media player only and does not provide any content.</footer>
+</body>
+</html>
